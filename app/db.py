@@ -2,6 +2,7 @@ import psycopg2
 from app.Model.Restaurant import Restaurant
 from app.Model.Address import Address
 from app.Model.Recommendation import Recommendation
+from config import Config
 
 
 class Database:
@@ -11,10 +12,10 @@ class Database:
 
     def connect(self):
         self.connection = psycopg2.connect(
-            dbname="iFoodDB",
-            user="postgres",
-            password="verysecurepassword",
-            host="localhost",
+            dbname=Config.DB_NAME,
+            user=Config.DB_USER,
+            password=Config.DB_PASSWORD,
+            host=Config.DB_HOST,
             port="5432",
             client_encoding="utf-8"
         )
