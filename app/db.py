@@ -37,13 +37,19 @@ class Database:
             self.cursor.execute(query, args)
             # Get the returned id if any (using RETURNING id)
             if self.cursor.description:
-                return self.cursor.fetchone()
+                return self.cursor.fetchall()
         except Exception as e:
             # Rollback the transaction
             self.connection.rollback()
             # Handle exceptions
             print(f"Error executing query: {e}")
             return None
+    
+    def exec_file(self, file: str):
+        res = ()
+        with open(file, 'r') as f:
+            res = self.cursor.execute(f.read())
+        return res
 
     def select(self, table: str, columns: list, condition: str = None, args=None):
         if args is None:
