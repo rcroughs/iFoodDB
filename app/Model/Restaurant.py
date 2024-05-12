@@ -3,7 +3,7 @@ from app.Model.PriceRange import PriceRange
 from app.Model.Menu import Menu
 
 class Restaurant:
-    def __init__(self, name: str, address: Address, delivery: bool, evaluation: float, menu: Menu, opening: int, closing: int, price_range: PriceRange, type: str):
+    def __init__(self, name: str, address: Address, delivery: bool, evaluation: float, menu: Menu, opening: int, closing: int, price_range: PriceRange, type: str, id: int = None):
         self._name = name
         self._address = address
         self._delivery = delivery
@@ -13,6 +13,7 @@ class Restaurant:
         self._closing = closing
         self._price_range = price_range
         self._type = type
+        self._id = id
 
     def name(self) -> str:
         return self._name
@@ -41,6 +42,9 @@ class Restaurant:
     def type(self) -> str:
         return self._type
 
+    def id(self) -> int:
+        return self._id
+
     def get_all_allergens(self) -> set:
         allergens = set()
         for dish in self._menu.dishes():
@@ -52,3 +56,6 @@ class Restaurant:
 
     def __str__(self):
         return f"Name: {self._name}\nAddress: {self._address}\nDelivery: {self._delivery}\nEvaluation: {self._evaluation}\nMenu: {self._menu}\nOpening: {self._opening}\nClosing: {self._closing}\nPrice Range: {self._price_range}\nType: {self._type}"
+
+    def __repr__(self):
+        return self.__str__()

@@ -21,7 +21,7 @@ def main():
         db.add_allergen(allergen)
 
     db.commit()
-    
+
     for restaurant in restaurants:
         db.add_restaurant(restaurant)
 
