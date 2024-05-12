@@ -1,0 +1,1 @@
+-- Le code postal de la ville dans laquelle les restaurants sont les moins bien notés en moyenne
