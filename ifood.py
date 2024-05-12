@@ -1,9 +1,12 @@
-#!/usr/bin/python3
-
-import sys
+from app.db import Database
 
 def main():
-    pass
+    db = Database()
+
+    db.connect()
+    db.create_tables("sql/create_tables.sql");
+
+    db.close()
 
 if __name__ == '__main__':
     main()
