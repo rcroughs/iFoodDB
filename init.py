@@ -25,6 +25,28 @@ def main():
     for restaurant in restaurants:
         db.add_restaurant(restaurant)
 
+    users = ext.extract_users("data/customers.json")
+    for user in users:
+        db.add_user(user)
+
+    db.commit()
+    
+    owner = ext.extract_owners("data/restaurateur.json")
+    for user in owner:
+        db.add_user(user)
+    
+    db.commit()
+
+    mods = ext.extract_mods("data/moderators.json")
+    for user in mods:
+        db.add_user(user)
+    
+    db.commit()
+
+    comments = ext.extract_comments("data/valid_comments.tsv")
+    for comment in comments:
+        db.add_comment(comment)
+
     db.commit()
     db.close()
 

@@ -1,9 +1,14 @@
 import xml.etree.ElementTree as ET
+import csv
+import json
 from app.Model.Address import Address
 from app.Model.Dish import Dish
 from app.Model.Menu import Menu
 from app.Model.PriceRange import PriceRange
 from app.Model.Restaurant import Restaurant
+from app.Model.User import User
+from app.Model.Comment import Comment
+from app.Model.Recommendation import Recommendation
 
 class Extractor:
     def extract_restaurants(self, xml_path: str) -> list[Restaurant]:
@@ -14,6 +19,47 @@ class Extractor:
             for restaurant in xml:
                 res.append(self.extract_restaurant(restaurant))
 
+        return res
+
+    def extract_users(self, json_path: str) -> list[User]:
+        res = []
+        with open(json_path, 'r') as file:
+            data = file.read()
+            jsons = json.loads(data)
+            for user in jsons:
+                res.append(self.extract_user(user))
+
+        return res
+
+    def extract_owners(self, json_path: str) -> list[User]:
+        res = []
+        with open(json_path, 'r') as file:
+            data = file.read()
+            jsons = json.loads(data)
+            for owner in jsons:
+                res.append(self.extract_owner(owner))
+
+        return res
+
+    def extract_mods(self, json_path: str) -> list[User]:
+        res = []
+        with open(json_path, 'r') as file:
+            data = file.read()
+            jsons = json.loads(data)
+            for mod in jsons:
+                res.append(self.extract_user(mod))
+
+        return res
+    
+    def extract_comments(self, tsv_path: str) -> list[Comment]:
+        res = []
+        with open(tsv_path, 'r') as file:
+            tsv = csv.reader(file, delimiter='\t')
+            next(tsv)
+            for comment in tsv:
+                res.append(self.extract_comment(comment))
+
+        print(len(res))
         return res
 
     def extract_restaurant(self, restaurant) -> Restaurant:
@@ -32,7 +78,6 @@ class Extractor:
         else:
             price_range = PriceRange.HIGH
         type = restaurant.find('type').text
-        print(address)
         return Restaurant(name, address, delivery, evaluation, menu, opening, closing, price_range, type)
 
     def extract_address(self, address) -> Address:
@@ -57,3 +102,51 @@ class Extractor:
         for allergen in allergens:
             res.append(allergen.text)
         return res
+
+    def extract_user(self, user) -> User:
+        fname = user['firstname']
+        lname = user['lastname']
+        address = Address(user['address']['city'], user['address']['street'], user['address']['country'], user['address']['number'], user['address']['zipcode'])
+        return User(lname, fname, address, False)
+    
+    def extract_owner(self, owner):
+        fname = owner['firstname']
+        lname = owner['lastname']
+        address = Address(owner['address']['city'], owner['address']['street'], owner['address']['country'], owner['address']['number'], owner['address']['zipcode'])
+        restaurants = [owner["restaurant"]]
+        return User(lname, fname, address, True, restaurants)
+
+    def extract_mod(self, mod):
+        fname = mod['firstname']
+        lname = mod['lastname']
+        address = Address(mod['address']['city'], mod['address']['street'], mod['address']['country'], mod['address']['number'], mod['address']['zipcode'])
+        return User(lname, fname, address, False).set_mod()
+
+    def extract_comment(self, comment) -> Comment:
+        com = comment[0]
+        note = comment[1]
+        date = comment[2]
+        recommendation = 0
+        if comment[3] == "recommandé":
+            recommendation = Recommendation.RECOMMENDED
+        elif comment[3] == "déconseillé":
+            recommendation = Recommendation.NOT_RECOMMENDED
+        elif comment[3] == "à éviter d'urgence":
+            recommendation = Recommendation.TO_BE_AVOIDED
+        else:
+            print(comment[3])
+        restaurant = comment[4]
+        noteservice = None
+        notedelivery = None
+        if comment[5][0] == "H":
+            noteservice = int(comment[5][-1])
+        else :
+            notedelivery = int(comment[5][-1])
+
+        datecomm = comment[6]
+        menu = comment[7].split(';')
+        price = float(comment[8])
+        begin = int(comment[9])
+        end = int(comment[10])
+        user = comment[11]
+        return Comment(user, com, datecomm, restaurant, note, date, menu, price, begin, end, recommendation, noteservice, notedelivery)
