@@ -1,4 +1,6 @@
-# Internet Food Database 🍔🍝🍜✨
+<h2 align="center">Internet Food Database</h2>
+<p align="center">INFO-H303 @ULB</p>
+
 ## Overview
 This project is a PostgreSQL database application built using psycopg2, a PostgreSQL adapter for Python. It aims to provide an implementation of the project for the course `INFO-H303` (Database) at the Université Libre de Bruxelles.
 
