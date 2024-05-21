@@ -5,16 +5,19 @@ class Owner:
         self.db = db
 
     def login(self) -> int:
-        f_name = input("First name: ")
-        l_name = input("Last name: ")
+        owner_id = 0
+        valid = False
+        while not valid:
+            f_name = input("First name: ")
+            l_name = input("Last name: ")
 
-        if self.db.check_owner(l_name, f_name):
-            owner_id = self.db.get_owner_id(l_name, f_name)[0]
-            print(f"Welcome back {f_name} {l_name}! Your id is {owner_id}")
-            return owner_id
-        else: 
-            print(f"Owner {f_name} {l_name} not found")
-            return -1
+            if self.db.check_owner(l_name, f_name):
+                owner_id = self.db.get_owner_id(l_name, f_name)[0]
+                print(f"Welcome back {f_name} {l_name}! Your id is {owner_id}")
+                valid = True
+            else: 
+                print(f"Owner {f_name} {l_name} not found")
+        return owner_id
         
     def register(self) -> int:
         f_name = input("First name: ")

@@ -6,16 +6,19 @@ class User:
         self.db = db
 
     def login(self) -> int:
-        f_name = input("First name: ")
-        l_name = input("Last name: ")
+        client_id = 0
+        valid = False
+        while not valid:
+            f_name = input("First name: ")
+            l_name = input("Last name: ")
 
-        if self.db.check_user(l_name, f_name):
-            client_id = self.db.get_user_id(l_name, f_name)[0]
-            print(f"Welcome back {f_name} {l_name}! Your id is {client_id}")
-            return client_id
-        else: 
-            print(f"User {f_name} {l_name} not found")
-            return -1
+            if self.db.check_user(l_name, f_name):
+                client_id = self.db.get_user_id(l_name, f_name)[0]
+                print(f"Welcome back {f_name} {l_name}! Your id is {client_id}")
+                valid = True
+            else: 
+                print(f"User {f_name} {l_name} not found")
+        return client_id
 
     def register(self) -> int:
         f_name = input("First name: ")
@@ -60,3 +63,13 @@ class User:
             print("2. Review a restaurant")
             print("3. See your reviews")
             print("4. Leave")
+            option = input("Option: ")
+            if option == "1":
+                pass
+            elif option == "2":
+                pass
+            elif option == "3":
+                pass
+            else:
+                print("Invalid option")
+                leaved = False
