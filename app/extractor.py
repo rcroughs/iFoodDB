@@ -9,6 +9,7 @@ from app.Model.Restaurant import Restaurant
 from app.Model.User import User
 from app.Model.Comment import Comment
 from app.Model.Recommendation import Recommendation
+from app.Model.DeletedComment import DeletedComment
 
 class Extractor:
     def extract_restaurants(self, xml_path: str) -> list[Restaurant]:
@@ -59,7 +60,15 @@ class Extractor:
             for comment in tsv:
                 res.append(self.extract_comment(comment))
 
-        print(len(res))
+        return res
+
+    def extract_deleted_comments(self, tsv_path: str) -> list[DeletedComment]:
+        res = []
+        with open(tsv_path, 'r') as file:
+            tsv = csv.reader(file, delimiter='\t')
+            for comment in tsv:
+                res.append(self.extract_deleted_comment(comment))
+
         return res
 
     def extract_restaurant(self, restaurant) -> Restaurant:
@@ -150,3 +159,34 @@ class Extractor:
         end = int(comment[10])
         user = comment[11]
         return Comment(user, com, datecomm, restaurant, note, date, menu, price, begin, end, recommendation, noteservice, notedelivery)
+
+    def extract_deleted_comment(self, deleted_comment) -> DeletedComment:
+        comm = deleted_comment[0]
+        note = deleted_comment[1]
+        date = deleted_comment[2]
+        recommendation = 0
+        if deleted_comment[3] == "recommandé":
+            recommendation = Recommendation.RECOMMENDED
+        elif deleted_comment[3] == "déconseillé":
+            recommendation = Recommendation.NOT_RECOMMENDED
+        elif deleted_comment[3] == "à éviter d'urgence":
+            recommendation = Recommendation.TO_BE_AVOIDED
+        else:
+            print(deleted_comment[3])
+
+        restaurant = deleted_comment[4]
+        noteservice = None
+        notedelivery = None
+        if deleted_comment[5][0] == "H":
+            noteservice = int(deleted_comment[5][-1])
+        else :
+            notedelivery = int(deleted_comment[5][-1])
+        
+        datecomm = deleted_comment[6]
+        menu = deleted_comment[7].split(';')
+        price = float(deleted_comment[8])
+        begin = int(deleted_comment[9])
+        end = int(deleted_comment[10])
+        user = deleted_comment[11]
+        mod_comment = deleted_comment[12]
+        return DeletedComment(user, comm, datecomm, restaurant, note, date, menu, price, begin, end, recommendation, noteservice, notedelivery, mod_comment, None)

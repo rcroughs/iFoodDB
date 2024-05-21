@@ -1,7 +1,7 @@
 from app.Model.Recommendation import Recommendation
 
 class Comment: 
-    def __init__(self, user: str, comment: str, datecomm: str, restaurant: str, note: int, date: str, menu: list[str], price: float, begin_hour: int, end_hour: int, recommendation: Recommendation, noteservice: int = None, notedelivery: int = None):
+    def __init__(self, user: str, comment: str, datecomm: str, restaurant: str, note: int, date: str, menu: list[str], price: float, begin_hour: int, end_hour: int, recommendation: Recommendation, noteservice: int = None, notedelivery: int = None, mod_comment: str = None):
         self._comment = comment
         self._date = date
         self._restaurant = restaurant
