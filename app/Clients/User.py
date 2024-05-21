@@ -4,6 +4,7 @@ from app.db import Database
 class User:
     def __init__(self, db: Database):
         self.db = db
+        self.client_id = -1 # Default value - not logged in
 
     def login(self) -> int:
         client_id = 0
@@ -47,10 +48,10 @@ class User:
             option = input("Login or Register? (l/r):")
 
             if option == "l":
-                self.login()
+                self.client_id = self.login()
                 valid = True
             elif option == "r":
-                self.register()
+                self.client_id = self.register()
                 valid = True
             else:
                 print("Invalid option")

@@ -3,6 +3,7 @@ from app.Model.Address import Address
 class Owner:
     def __init__(self, db):
         self.db = db
+        self.owner_id = -1 # Default value - not logged in
 
     def login(self) -> int:
         owner_id = 0
@@ -43,7 +44,6 @@ class Owner:
     def run(self):
         print("Would you like to login or register?")
         valid = False
-        self.owner_id = -1
         while not valid:
             option = input("Login or Register? (l/r):")
 
