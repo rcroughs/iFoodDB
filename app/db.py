@@ -147,9 +147,27 @@ class Database:
 
         :param allergen: The allergen to add
         """
-        self.execute(
-            "INSERT INTO allergenes (NAME) VALUES (%s)",
+        return self.execute(
+            "INSERT INTO allergenes (NAME) VALUES (%s) RETURNING id",
             (allergen,)
+        )[0]
+
+    def add_dish(self, menu_id: int, dish_name: str, price: float):
+        return self.execute(
+            "INSERT INTO plats (NAME, PRICE, MENU) VALUES (%s, %s, %s) returning id",
+            (dish_name, price, menu_id)
+        )[0]
+
+    def add_dish_allergen(self, dish_id: int, allergen_id: int):
+        """
+        Adds an allergen to a dish
+
+        :param dish_id: The ID of the dish
+        :param allergen_id: The ID of the allergen
+        """
+        self.execute(
+            "INSERT INTO plats_allergenes (ID_PLAT, ID_ALLERGENE) VALUES (%s, %s)",
+            (dish_id, allergen_id)
         )
         return self
 
@@ -188,7 +206,7 @@ class Database:
             "SELECT RESTAURANT_OWNER FROM users WHERE ID = %s",
             (client_id,)
         )
-        return self.cursor.fetchone() is True
+        return self.cursor.fetchone()[0] is True
 
     def add_owns(self, client_id: int, restaurant_id: int):
         """
@@ -196,7 +214,7 @@ class Database:
         """
         if (self.is_owner(client_id)):
             self.execute(
-                "INSERT INTO owns (ID_CLIENT, ID_RESTAURANT) VALUES (%s, %s)",
+                "INSERT INTO owns (ID_USER, ID_RESTAURANT) VALUES (%s, %s)",
                 (client_id, restaurant_id)
             )
         return self
@@ -269,6 +287,42 @@ class Database:
                 (name, menu_id)
             )
 
+    def get_dishes(self, menu_id):
+        return self.execute(
+            "SELECT * FROM plats WHERE MENU = %s",
+            (menu_id,)
+        )
+
+    def get_all_allergens(self) -> list:
+        """
+        Get all allergens from the database
+        """
+        self.cursor.execute(
+            "SELECT * FROM allergenes"
+        )
+        return self.cursor.fetchall()
+
+    def get_allergens(self, dish_id: int) -> list:
+        """
+        Get all allergens of a dish
+        """
+        self.cursor.execute(
+            "SELECT * FROM plats_allergenes WHERE ID_PLAT = %s",
+            (dish_id,)
+        )
+        return self.cursor.fetchall()
+
+
+    def get_allergen_name(self, allergen_id: int) -> str:
+        """
+        Get the name of an allergen by its ID
+        """
+        self.cursor.execute(
+            "SELECT NAME FROM allergenes WHERE ID = %s",
+            (allergen_id,)
+        )
+        return self.cursor.fetchone()[0]
+    
     def add_review(self, restaurant_id: int, client_id: int, rating: int, comment: str, recommendation: Recommendation, plat: list[str], price: int, begin: int, end: int, date_rating: str, physical_note: int = None, delivery_note: int = None):
         """
         Add a review to a restaurant
@@ -286,6 +340,7 @@ class Database:
         :param physical_note: The physical note of the restaurant
         :param delivery_note: The delivery note of the restaurant
         """
+        review_id = None
         if not self.is_owner(client_id):
             review_id = self.execute(
                 "INSERT INTO notes (ID_RESTAURANT, ID_CLIENT, NOTE, COMMENT, RECOMMENDATION, PRICE, NOTE_PHYSICAL, NOTE_DELIVERY, BEGIN_HOUR, END_HOUR, DATE_RATING) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id",
@@ -297,16 +352,16 @@ class Database:
                     "INSERT INTO notes_plat (ID_PLAT, ID_NOTE) VALUES (%s, %s)",
                     (self.get_dish_id(elem, self.get_menu_id(restaurant_id))[0], review_id)
                 )
-        return self
+        return review_id
 
     def get_menu_id(self, restaurant_id: int) -> int:
         """
         Get the menu ID of a restaurant
         """
-        self.cursor.execute(
+        return self.execute(
             "SELECT MENU FROM restaurants WHERE ID = %s",
             (restaurant_id,)
-        )
+        )[0]
 
     def get_review_id(self, restaurant_id: int, client_id: int, date_rating: str) -> int:
         """
@@ -430,11 +485,10 @@ class Database:
         """
         Get all restaurants owned by a given user
         """
-        self.cursor.execute(
+        return self.execute(
             "SELECT ID_RESTAURANT FROM owns WHERE ID_USER = %s",
             (client_id,)
         )
-        return self.cursor.fetchall()
     
     def get_restaurant_id(self, name: str) -> int:
         """
@@ -445,6 +499,16 @@ class Database:
             (name,)
         )
         return self.cursor.fetchone()
+
+    def get_restaurant_name(self, restaurant_id: int) -> str:
+        """
+        Get the name of a restaurant by its ID
+        """
+        self.cursor.execute(
+            "SELECT NAME FROM restaurants WHERE ID = %s",
+            (restaurant_id,)
+        )
+        return self.cursor.fetchone()[0]
 
     def restaurant_exists(self, name: str, zip: int) -> bool:
         """
@@ -461,8 +525,9 @@ class Database:
 
     def add_user(self, user):
         if user.is_owner():
-            self.create_owner(user.name(), user.first_name(), user.address())
-            self.commit()
+            if not self.check_user(user.name(), user.first_name()):
+                self.create_owner(user.name(), user.first_name(), user.address())
+                self.commit()
             for restaurant in user.restaurants():
                 self.add_owns(self.get_user_id(user.name(), user.first_name()), self.get_restaurant_id(restaurant))
         else:
@@ -476,7 +541,7 @@ class Database:
         if len(comment.comment()) > 4096:
             print (f"Comment too long: {len(comment.comment())}")
             return self
-        self.add_review(
+        return self.add_review(
             self.get_restaurant_id(comment.restaurant()),
             self.get_user_id(comment.name(), comment.first_name()),
             comment.note(),
@@ -490,14 +555,13 @@ class Database:
             comment.noteservice(),
             comment.notedelivery()
         )
-        return self
 
     def delete_comment(self, comment):
         review_id = self.get_review_id(self.get_restaurant_id(comment.restaurant()), self.get_user_id(comment.name(), comment.first_name()), comment.datecomm())
         if review_id is None:
-            self.add_comment(comment).commit()
-            review_id = self.get_review_id(self.get_restaurant_id(comment.restaurant()), self.get_user_id(comment.name(), comment.first_name()), comment.datecomm())
-        self.delete_review_anonymously(review_id[0], comment.mod_comment())
+            review_id = self.add_comment(comment)
+            self.commit()
+        self.delete_review_anonymously(review_id, comment.mod_comment())
         return self
 
     def fetchall(self):
