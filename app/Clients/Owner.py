@@ -95,6 +95,39 @@ class Owner:
         self.db.commit()
         print("Dish added successfully")
 
+    def remove_dish(self):
+        restaurants = self.db.get_owner_restaurants(self.owner_id)
+        print("Which restaurant would you like to remove a dish from?")
+        for i, restaurant in enumerate(restaurants):
+            print(f"{i+1}. {self.db.get_restaurant_name(restaurant[0])}")
+        valid = False
+        optionrest = 0
+        while not valid:
+            optionrest = int(input("Option: "))
+            if optionrest < 1 or optionrest > len(restaurants):
+                print("Invalid option")
+                valid = False
+            else:
+                valid = True
+        restaurant_id = restaurants[optionrest-1][0]
+        menu_id = self.db.get_menu_id(restaurant_id)
+        dishes = self.db.get_dishes(menu_id)
+        print("Which dish would you like to remove?")
+        for i, dish in enumerate(dishes):
+            print(f"{i+1}. {dish[2]}")
+        valid = False
+        optiondish = 0
+        while not valid:
+            optiondish = int(input("Option: "))
+            if optiondish < 1 or optiondish > len(dishes):
+                print("Invalid option")
+                valid = False
+            else:
+                valid = True
+        dish_id = dishes[optiondish-1][0]
+        self.db.remove_dish(dish_id)
+        self.db.commit()
+        print("Dish removed successfully")
 
     def see_menus(self):
         restaurants = self.db.get_owner_restaurants(self.owner_id)
@@ -152,8 +185,9 @@ class Owner:
             print("1. Add a restaurant")
             print("2. See your menus")
             print("3. Add a dish")
-            print("4. See Reviews")
-            print("5. Leave")
+            print("4. Remove a dish")
+            print("5. See Reviews")
+            print("6. Leave")
             option = input("Option: ")
             if option == "1":
                 pass
@@ -162,8 +196,10 @@ class Owner:
             elif option == "3":
                 self.add_dish()
             elif option == "4":
-                pass
+                self.remove_dish()
             elif option == "5":
+                pass 
+            elif option == "6":
                 leaved = True
             else:
                 print("Invalid option")

@@ -158,6 +158,23 @@ class Database:
             (dish_name, price, menu_id)
         )[0]
 
+    def remove_dish(self, dish_id: int):
+        """
+        Remove a dish from the database
+
+        :param dish_id: The ID of the dish
+        """
+        self.execute(
+            "DELETE FROM plats_allergenes WHERE ID_PLAT = %s",
+            (dish_id,)
+        )
+        # Dont deleted completely, just set the menu to NULL so the dish is not displayed but still accessible for the reviews
+        self.execute(
+            "UPDATE plats SET MENU = NULL WHERE ID = %s",
+            (dish_id,)
+        )
+        return self
+
     def add_dish_allergen(self, dish_id: int, allergen_id: int):
         """
         Adds an allergen to a dish
