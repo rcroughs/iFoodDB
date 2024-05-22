@@ -54,12 +54,17 @@ class Owner:
         valid = False
         optionrest = 0
         while not valid:
-            optionrest = int(input("Option: "))
-            if optionrest < 1 or optionrest > len(restaurants):
+            optionrest = input("Option: ")
+            if optionrest.isdigit():
+                optionrest = int(optionrest)
+                if optionrest < 1 or optionrest > len(restaurants):
+                    print("Invalid option")
+                    valid = False
+                else:
+                    valid = True
+            else:
                 print("Invalid option")
                 valid = False
-            else:
-                valid = True
         restaurant_id = restaurants[optionrest-1][0]
         menu_id = self.db.get_menu_id(restaurant_id)
         dish_name = input("Dish name: ")
@@ -90,7 +95,7 @@ class Owner:
                 valid = False
 
         for allergen_id in inp:
-            self.db.add_dish_allergen(allergen_id, dish_id)
+            self.db.add_dish_allergen(dish_id, allergen_id)
 
         self.db.commit()
         print("Dish added successfully")
