@@ -1,7 +1,7 @@
 from app.Model.Dish import Dish
 
 class Menu:
-    def __init__(self, dishes: list[Dish]):
+    def __init__(self, dishes: list[Dish] = []):
         self._dishes = dishes
 
     def __str__(self):
