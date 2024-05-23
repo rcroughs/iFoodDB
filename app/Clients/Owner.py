@@ -1,9 +1,11 @@
 from app.Model.Address import Address
 from app.db import Database
-
+from app.Model.Restaurant import Restaurant
+from app.Model.PriceRange import PriceRange
+from app.Model.Menu import Menu
 class Owner:
     def __init__(self, db):
-        self.db = db
+        self.db : Database = db
         self.owner_id = -1 # Default value - not logged in
 
     def login(self) -> int:
@@ -46,6 +48,57 @@ class Owner:
         print(f"Welcome {f_name} {l_name}! Your id is {owner_id}")
         return owner_id
     
+    def add_restaurant(self):
+        try :
+            restaurant_name = input("Restaurant name: ")
+            zip_code = int(input("Zip code: "))
+
+            if self.db.restaurant_exists(restaurant_name, zip_code):
+                print("Restaurant already exists. Adding you as an owner.")
+                restaurant_id = self.db.get_restaurant_id(restaurant_name)[0]
+                owner_id = self.register()
+                if owner_id != -1:
+                    self.db.add_owns(owner_id, restaurant_id).commit()
+                    print(f"You have been added as an owner of {restaurant_name}.")
+                return
+            else:
+                print("Restaurant does not exist. Please provide the following details to create it.")
+                
+                street = input("Street: ")
+                number = int(input("Number: "))
+                city = input("City: ")
+                country = input("Country: ")
+                
+                delivery = input("Delivery (yes/no): ").lower() == 'yes'
+                
+                opening_time = int(input("Opening time (HH): "))
+                closing_time = int(input("Closing time (HH): "))
+                price_range = int(input("Price range: ( 1 - Low,  2 - Medium, 3 - High)"))
+                food_type = input("Food type: ")
+
+                address = Address(city, street, country, number, zip_code)
+
+                
+                if self.owner_id != -1:
+                    restaurant = Restaurant(
+                        name=restaurant_name,
+                        address=address,
+                        type=food_type,
+                        evaluation=0,
+                        delivery=delivery,
+                        menu=Menu(),
+                        opening=opening_time,
+                        closing=closing_time,
+                        price_range=PriceRange(price_range)
+                    )
+                    restaurant_id = self.db.add_restaurant(restaurant)[0]
+                    self.db.add_owns(self.owner_id, restaurant_id).commit()
+                    print(f"{restaurant_name} has been created and you have been added as an owner.")    
+        except Exception as e :
+            print(e)
+            print("\nThere was an error creating the restaurant, please try again\n")
+            self.add_restaurant()
+
     def add_dish(self):
         restaurants = self.db.get_owner_restaurants(self.owner_id)
         print("Which restaurant would you like to add a dish to?")
@@ -195,7 +248,7 @@ class Owner:
             print("6. Leave")
             option = input("Option: ")
             if option == "1":
-                pass
+                self.add_restaurant()
             elif option == "2":
                 self.see_menus()
             elif option == "3":
