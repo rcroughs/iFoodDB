@@ -1,6 +1,6 @@
 from app.db import Database
-from app.Model.Address import Address
-from app.client import Client
+import psycopg2
+
 
 def setup_test_data(db):
     # Clear existing data
@@ -31,44 +31,41 @@ def setup_test_data(db):
 
     db.connection.commit()
 
-def test_request6(db):
-    # Execute the request6.sql query
-    with open("sql/request_6.sql", "r") as file:
-        query = file.read()
 
-    print("\nExecuting request 6")
-    db.cursor.execute(query)
-    results = db.cursor.fetchall()
+def test_file_resquest(db: Database, file_name: str) -> None:
+    # Testing a request from a file
+    print(f"🚀 Testing request from file: {file_name}")
+    request = ""
+    result = None
+    with open(file_name, "r") as file:
+        request = file.read()
+    try:
+        db.cursor.execute(request)
+        result = db.cursor.fetchall()
+    except psycopg2.errors.ProgrammingError as e:
+        print(e)
+        return
+    if result is None:
+        print("No result")
+    else:
+        for row in result:
+            print(row)
 
-    # Print results for manual verification
-    for row in results:
-        print(row)
-
-def test_request3(db):
-    # Execute the request3.sql query
-    with open("sql/request_3.sql", "r") as file:
-        query = file.read()
-
-  
-    print("\nExecuting request 3")
-    db.cursor.execute(query)
-    results = db.cursor.fetchall()
-
-    # Print results for verification
-    for row in results:
-        print(row)
-    
 
 def main():
     db = Database()
     db.connect()
     db.create_tables("sql/create_tables.sql")
-    
-    test_request3(db)
-    test_request6(db)
-    
+
+    test_file_resquest(db, "sql/request_1.sql")
+    test_file_resquest(db, "sql/request_2.sql")
+    test_file_resquest(db, "sql/request_3.sql")
+    test_file_resquest(db, "sql/request_4.sql")
+    test_file_resquest(db, "sql/request_5.sql")
+    test_file_resquest(db, "sql/request_6.sql")
 
     db.close()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

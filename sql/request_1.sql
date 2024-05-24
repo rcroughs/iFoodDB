@@ -1,6 +1,6 @@
 -- Les restaurants ayant un avis moyen de plus de 3
-SELECT r.name, AVG(c.rating) AS average_rating
-FROM Restaurant r
-JOIN Comment c ON r.id = c.restaurant_id
+SELECT r.name, AVG(c.note) AS average_rating
+FROM restaurants r
+JOIN notes c ON r.id = c.id_restaurant
 GROUP BY r.name
-HAVING AVG(c.rating) >= 3;
+HAVING AVG(c.note) >= 3;
