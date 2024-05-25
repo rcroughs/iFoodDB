@@ -288,6 +288,33 @@ class User:
             physical_note,
             delivery_note,
         )
+    
+        self.db.commit()
+      
+    
+    def get_all_reviews(self):
+        reviews = self.db.get_user_reviews(self.client_id)
+        
+        reviews_counter = 1
+
+        for review in reviews:
+            print(f"| Review number {reviews_counter} :")
+            print("╪ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ╪")
+            print(f"| Review ID : {review[0]}")
+            print(f"| User ID : {review[1]}")
+            print(f"| Restaurant ID : {review[2]}")
+            print(f"| Rating date : {review[3]}")
+            print(f"| Comment : {review[4]}")
+            print(f"| Global rating : {review[5]}")
+            appreciation = "Recommanded" if review[6] == 3 else "Not recommanded" if review[6] == 2 else "To avoid"
+            print(f"| Appreciation : {appreciation}")
+            print(f"| Delivery note (0 if none) : {review[7]}")
+            print(f"| Physical note (0 if none) : {review[8]}")
+            print(f"| Start-end of the meal : {review[9]}-{review[10]}")
+            print(f"| Total price : {review[11]}")
+            print("╪ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ╪")
+
+            reviews_counter += 1
 
     def display_restaurant(self, restaurant: Restaurant):
         print(f"🍽️ Name: {restaurant.name()}")
@@ -370,7 +397,7 @@ class User:
             elif option == "2":
                 self.leave_review()
             elif option == "3":
-                pass
+                self.get_all_reviews()
             elif option == "4":
                 leaved = True
             else:
