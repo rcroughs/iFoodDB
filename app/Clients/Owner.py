@@ -3,10 +3,12 @@ from app.db import Database
 from app.Model.Restaurant import Restaurant
 from app.Model.PriceRange import PriceRange
 from app.Model.Menu import Menu
+
+
 class Owner:
     def __init__(self, db):
-        self.db : Database = db
-        self.owner_id = -1 # Default value - not logged in
+        self.db: Database = db
+        self.owner_id = -1  # Default value - not logged in
 
     def login(self) -> int:
         owner_id = 0
@@ -23,10 +25,10 @@ class Owner:
                 else:
                     print(f"{f_name} {l_name} is not an owner")
                     valid = False
-            else: 
+            else:
                 print(f"Owner {f_name} {l_name} not found")
         return owner_id
-        
+
     def register(self) -> int:
         f_name = input("First name: ")
         l_name = input("Last name: ")
@@ -47,9 +49,9 @@ class Owner:
             owner_id = self.db.get_user_id(l_name, f_name)[0]
         print(f"Welcome {f_name} {l_name}! Your id is {owner_id}")
         return owner_id
-    
+
     def add_restaurant(self):
-        try :
+        try:
             restaurant_name = input("Restaurant name: ")
             zip_code = int(input("Zip code: "))
 
@@ -62,23 +64,26 @@ class Owner:
                     print(f"You have been added as an owner of {restaurant_name}.")
                 return
             else:
-                print("Restaurant does not exist. Please provide the following details to create it.")
-                
+                print(
+                    "Restaurant does not exist. Please provide the following details to create it."
+                )
+
                 street = input("Street: ")
                 number = int(input("Number: "))
                 city = input("City: ")
                 country = input("Country: ")
-                
-                delivery = input("Delivery (yes/no): ").lower() == 'yes'
-                
+
+                delivery = input("Delivery (yes/no): ").lower() == "yes"
+
                 opening_time = int(input("Opening time (HH): "))
                 closing_time = int(input("Closing time (HH): "))
-                price_range = int(input("Price range: ( 1 - Low,  2 - Medium, 3 - High)"))
+                price_range = int(
+                    input("Price range: ( 1 - Low,  2 - Medium, 3 - High)")
+                )
                 food_type = input("Food type: ")
 
                 address = Address(city, street, country, number, zip_code)
 
-                
                 if self.owner_id != -1:
                     restaurant = Restaurant(
                         name=restaurant_name,
@@ -89,12 +94,14 @@ class Owner:
                         menu=Menu(),
                         opening=opening_time,
                         closing=closing_time,
-                        price_range=PriceRange(price_range)
+                        price_range=PriceRange(price_range),
                     )
                     restaurant_id = self.db.add_restaurant(restaurant)[0]
                     self.db.add_owns(self.owner_id, restaurant_id).commit()
-                    print(f"{restaurant_name} has been created and you have been added as an owner.")    
-        except Exception as e :
+                    print(
+                        f"{restaurant_name} has been created and you have been added as an owner."
+                    )
+        except Exception as e:
             print(e)
             print("\nThere was an error creating the restaurant, please try again\n")
             self.add_restaurant()
@@ -118,7 +125,7 @@ class Owner:
             else:
                 print("Invalid option")
                 valid = False
-        restaurant_id = restaurants[optionrest-1][0]
+        restaurant_id = restaurants[optionrest - 1][0]
         menu_id = self.db.get_menu_id(restaurant_id)
         dish_name = input("Dish name: ")
         price = float(input("Price: "))
@@ -142,7 +149,7 @@ class Owner:
                 self.db.commit()
                 inp.append(allergen_id)
             elif option.isdigit() and int(option) <= len(allergens):
-                inp.append(allergens[int(option)-1][0])
+                inp.append(allergens[int(option) - 1][0])
             else:
                 print("Invalid option")
                 valid = False
@@ -167,7 +174,7 @@ class Owner:
                 valid = False
             else:
                 valid = True
-        restaurant_id = restaurants[optionrest-1][0]
+        restaurant_id = restaurants[optionrest - 1][0]
         menu_id = self.db.get_menu_id(restaurant_id)
         dishes = self.db.get_dishes(menu_id)
         print("Which dish would you like to remove?")
@@ -182,7 +189,7 @@ class Owner:
                 valid = False
             else:
                 valid = True
-        dish_id = dishes[optiondish-1][0]
+        dish_id = dishes[optiondish - 1][0]
         self.db.remove_dish(dish_id)
         self.db.commit()
         print("Dish removed successfully")
@@ -201,7 +208,7 @@ class Owner:
                 valid = False
             else:
                 valid = True
-        restaurant_id = restaurants[optionrest-1][0]
+        restaurant_id = restaurants[optionrest - 1][0]
         menu_id = self.db.get_menu_id(restaurant_id)
         dishes = self.db.get_dishes(menu_id)
         print()
@@ -211,8 +218,44 @@ class Owner:
             print(f"➡️ {dish[2]}: {dish[3]}€")
 
             allergens = self.db.get_allergens(dish[0])
-            print(f"⚠️ {', '.join([self.db.get_allergen_name(allergen[1]) for allergen in allergens])}")
+            print(
+                f"⚠️ {', '.join([self.db.get_allergen_name(allergen[1]) for allergen in allergens])}"
+            )
 
+        print()
+
+    def print_review(self, review):
+        user = self.db.get_user(review[1])
+        print(f"👤 {user[1]} {user[2]} on {review[3]} with {review[5]} stars")
+        print(review[4])
+        print("Took:")
+        dishes_id = self.db.get_dishes_id_from_review(review[0])
+        for dish_id in dishes_id:
+            dish = self.db.get_dish_name(dish_id[0])
+            print(f"➡️ {dish}")
+
+        print("-" * 50)
+
+    def see_reviews(self):
+        restaurants = self.db.get_owner_restaurants(self.owner_id)
+        print("Which restaurant would you like to see the reviews of?")
+        for i, restaurant in enumerate(restaurants):
+            print(f"{i+1}. {self.db.get_restaurant_name(restaurant[0])}")
+        valid = False
+        optionrest = 0
+        while not valid:
+            optionrest = int(input("Option: "))
+            if optionrest < 1 or optionrest > len(restaurants):
+                print("Invalid option")
+                valid = False
+            else:
+                valid = True
+        restaurant_id = restaurants[optionrest - 1][0]
+        reviews = self.db.get_restaurant_reviews(restaurant_id)
+        print()
+        print(f"Reviews of {self.db.get_restaurant_name(restaurant_id)}")
+        for review in reviews:
+            self.print_review(review)
         print()
 
     def run(self):
@@ -236,7 +279,7 @@ class Owner:
             else:
                 print("Invalid option")
                 valid = False
-        
+
         leaved = False
         while not leaved:
             print("What would you like to do?")
@@ -256,7 +299,7 @@ class Owner:
             elif option == "4":
                 self.remove_dish()
             elif option == "5":
-                pass 
+                self.see_reviews()
             elif option == "6":
                 leaved = True
             else:
