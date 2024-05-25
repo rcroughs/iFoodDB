@@ -1,5 +1,4 @@
 -- Le restaurant non-asiatique proposant le plus de plats qui sont généralement proposés dans des restaurant asiatiques
--- Step 1: Identify dishes served in Asian restaurants
 -- Étape 1: Identifier les plats servis dans les restaurants asiatiques
 WITH AsianRestaurantDishes AS (
     SELECT p.ID AS dish_id
