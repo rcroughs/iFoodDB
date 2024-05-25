@@ -147,21 +147,22 @@ WHERE
 
 *Algèbre relationnelle*
 
-$a \leftarrow \pi_{\text{idR, menuR, nameR}}(\alpha_{\text{id:idR, menu:menuR, name:nameR}}(restaurants))$
+$a \leftarrow \pi_{\text{price}}(plats)$
 
-$b \leftarrow \pi_{\text{menuP, priceP}}(\alpha_{\text{menu:menuP, price:priceP}}(plats))$
+$b \leftarrow plats \times \alpha_{\text{price:price2}}(a)$
 
-$c \leftarrow a \bowtie_{\text{menuP=menuR}} b$
+$c \leftarrow \sigma_{\text{price<price2}}(b)$
 
-$d \leftarrow \pi_{\text{menuP, priceP}}(C)$
+$d \leftarrow \pi_{\text{id}}(c)$
 
-$e \leftarrow c \times \alpha_{\text{PriceP:PriceP2}}(d)$
+$e \leftarrow \pi_{\text{id}}(plats)$
 
-$f \leftarrow \sigma_{\text{PriceP < PriceP2}}(e)$
+$f \leftarrow e - d$
 
-$g \leftarrow \sigma_{\text{menuP=menuR}}(f)$
+$g \leftarrow f * \alpha_{\text{menu:menuP}}(plats)$
 
-$h \leftarrow \pi_{\text{name}}(g)$
+$h \leftarrow \pi_{\text{name}}(restaurants \bowtie_{\text{menu=menuP}} g)$
+
 
 
 ---
@@ -197,16 +198,61 @@ LIMIT
 
 ---
 
+*Algèbre relationnelle*
+
+Il s'agit d'une requête qui requiert des notions d'ordre et de limite de résultats. Ce n'est pas applicable en algèbre relationnelle traditionnelle car les opérations d'aggrégation n'y sont pas admises.
+
+---
+
 ### Requête 4
 ```sql
 -- Le restaurant non-asiatique proposant le plus de plats qui sont généralement proposés dans des restaurant asiatiques
-WITH AsianRestaurantDishes AS(
-    SELECT rd.dish_id
-    FROM Restaurants r
-    JOIN RestaurantDishes rd ON r.restaurant_id = rd.restaurant_id
-    WHERE r.cuisine_type = 'Asian'
+-- Étape 1: Identifier les plats servis dans les restaurants asiatiques
+WITH AsianRestaurantDishes AS (
+    SELECT p.ID AS dish_id, p.NAME AS dish_name
+    FROM restaurants r
+    JOIN plats p ON r.MENU = p.MENU
+    WHERE r.FOOD_TYPE = 'asiatique'
+),
+
+-- Étape 2: Compter combien de restaurants asiatiques servent chaque plat
+DishCountInAsianRestaurants AS (
+    SELECT dish_name, COUNT(*) AS asian_restaurant_count
+    FROM AsianRestaurantDishes
+    GROUP BY dish_name
+),
+
+-- Étape 3: Identifier les plats servis dans les restaurants non asiatiques
+NonAsianRestaurantDishes AS (
+    SELECT r.ID AS restaurant_id, p.NAME AS dish_name
+    FROM restaurants r
+    JOIN plats p ON r.MENU = p.MENU
+    WHERE r.FOOD_TYPE != 'asiatique'
 ),
 ```
+
+---
+
+```sql
+-- Étape 4: Compter le nombre de plats typiquement servis dans les restaurants asiatiques qui sont servis dans chaque restaurant non asiatique
+PopularDishesInNonAsianRestaurants AS (
+    SELECT nard.restaurant_id, COUNT(*) AS popular_dish_count
+    FROM NonAsianRestaurantDishes nard
+    JOIN DishCountInAsianRestaurants dar ON nard.dish_name = dar.dish_name
+    WHERE dar.asian_restaurant_count >= 2
+    GROUP BY nard.restaurant_id
+)
+
+-- Étape 5: Sélectionner le restaurant non asiatique avec le plus grand nombre de ces plats
+SELECT r.NAME, r.FOOD_TYPE, pdr.popular_dish_count
+FROM PopularDishesInNonAsianRestaurants pdr
+JOIN restaurants r ON pdr.restaurant_id = r.ID
+ORDER BY pdr.popular_dish_count DESC LIMIT 1;
+```
+
+*Algèbre relationelle*
+
+Il n'est à nouveau pas possible de trouver quel restaurant non-asiatique propose le **plus** de plats servis généralement par des restaurants asiatiques. Le problème n'est pas de trouver les plats servis par des restaurants asiatiques, mais bien de compter leurs occurences pour un restaurant non-asiatique. Cependant, il est tout à fait possible de déterminer les restaurants non-asiatiques qui servent des plats généralement servis dans des restaurants asiatiques.
 
 ---
 
@@ -248,6 +294,10 @@ WHERE
     MoyenneParVille = (SELECT MIN(MoyenneParVille) FROM average_per_city);
 
 ```
+
+*Algèbre relationnelle*
+
+Impossible de calculer des moyennes en algèbre relationnelle.
 
 ---
 
@@ -323,5 +373,9 @@ WHERE
     rank = 1;
 
 ```
+
+*Algèbre relationnelle*
+
+Notion d'ordre (le plus représenté). Limité par l'agèbre relationnelle.
 
 
