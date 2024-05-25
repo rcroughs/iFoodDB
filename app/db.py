@@ -367,15 +367,15 @@ class Database:
         """
         Add a review to a restaurant
 
-        :param restaurant_id: The ID of the restaurant
-        :param client_id: The ID of the client
+        :param restaurant_id: The ID of the restaurant 
+        :param client_id: The ID of the client 
         :param rating: The rating of the restaurant
-        :param comment: The comment of the client
-        :param recommendation: The recommendation of the client (RECOMMENDED, NOT_RECOMMENDED, TO_BE_AVOIDED)
-        :param plat: The ordered dishes
-        :param price: The price of the meal
-        :param begin: The beginning of the meal
-        :param end: The end of the meal
+        :param comment: The comment of the client 
+        :param recommendation: The recommendation of the client (RECOMMENDED, NOT_RECOMMENDED, TO_BE_AVOIDED) 
+        :param plat: The ordered dishes 
+        :param price: The price of the meal  
+        :param begin: The beginning of the meal 
+        :param end: The end of the meal 
         :param date_rating: The date of the rating
         :param physical_note: The physical note of the restaurant
         :param delivery_note: The delivery note of the restaurant
@@ -545,7 +545,10 @@ class Database:
         """
         Get reviews posted by a given user
         """
-        self.cursor.execute("SELECT * FROM reviews WHERE ID_CLIENT = %s", (client_id,))
+        self.cursor.execute(
+            "SELECT * FROM notes WHERE ID_CLIENT = %s",
+            (client_id,)
+        )
         return self.cursor.fetchall()
 
     def get_owner_restaurants(self, client_id: int) -> list:
