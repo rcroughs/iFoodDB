@@ -3,6 +3,7 @@ from app.db import Database
 from app.Model.Restaurant import Restaurant
 from app.Model.PriceRange import PriceRange
 from app.Model.Menu import Menu
+from app.os import clear
 
 
 class Owner:
@@ -51,6 +52,8 @@ class Owner:
         return owner_id
 
     def add_restaurant(self):
+        print("🏪 Add a restaurant")
+        print("-" * 50)
         try:
             restaurant_name = input("Restaurant name: ")
             zip_code = int(input("Zip code: "))
@@ -105,8 +108,11 @@ class Owner:
             print(e)
             print("\nThere was an error creating the restaurant, please try again\n")
             self.add_restaurant()
+        input("Press enter to continue")
 
     def add_dish(self):
+        print("🍽️ Add a dish")
+        print("-" * 50)
         restaurants = self.db.get_owner_restaurants(self.owner_id)
         print("Which restaurant would you like to add a dish to?")
         for i, restaurant in enumerate(restaurants):
@@ -158,9 +164,11 @@ class Owner:
             self.db.add_dish_allergen(dish_id, allergen_id)
 
         self.db.commit()
-        print("Dish added successfully")
+        input("Dish added successfully. Press enter to continue")
 
     def remove_dish(self):
+        print("🗑 Remove a dish")
+        print("-" * 50)
         restaurants = self.db.get_owner_restaurants(self.owner_id)
         print("Which restaurant would you like to remove a dish from?")
         for i, restaurant in enumerate(restaurants):
@@ -192,9 +200,11 @@ class Owner:
         dish_id = dishes[optiondish - 1][0]
         self.db.remove_dish(dish_id)
         self.db.commit()
-        print("Dish removed successfully")
+        input("Dish removed successfully. Press enter to continue")
 
     def see_menus(self):
+        print("📜 See all your menus")
+        print("-" * 50)
         restaurants = self.db.get_owner_restaurants(self.owner_id)
         print("Which restaurant would you like to see the menu of?")
         for i, restaurant in enumerate(restaurants):
@@ -222,7 +232,7 @@ class Owner:
                 f"⚠️ {', '.join([self.db.get_allergen_name(allergen[1]) for allergen in allergens])}"
             )
 
-        print()
+        input("Press enter to continue")
 
     def print_review(self, review):
         user = self.db.get_user(review[1])
@@ -237,6 +247,8 @@ class Owner:
         print("-" * 50)
 
     def see_reviews(self):
+        print("🌟 See all your reviews")
+        print("-" * 50)
         restaurants = self.db.get_owner_restaurants(self.owner_id)
         print("Which restaurant would you like to see the reviews of?")
         for i, restaurant in enumerate(restaurants):
@@ -256,7 +268,7 @@ class Owner:
         print(f"Reviews of {self.db.get_restaurant_name(restaurant_id)}")
         for review in reviews:
             self.print_review(review)
-        print()
+        input("Press enter to continue")
 
     def run(self):
         print("Would you like to login or register?")
@@ -282,6 +294,9 @@ class Owner:
 
         leaved = False
         while not leaved:
+            clear()
+            print("📖 Owner Menu")
+            print("-" * 50)
             print("What would you like to do?")
             print("1. Add a restaurant")
             print("2. See your menus")
@@ -290,6 +305,7 @@ class Owner:
             print("5. See Reviews")
             print("6. Leave")
             option = input("Option: ")
+            clear()
             if option == "1":
                 self.add_restaurant()
             elif option == "2":

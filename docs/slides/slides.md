@@ -101,6 +101,7 @@ def extract_comment(self, comment) -> Comment:
 ### Requête 1
 
 *SQL*
+
 ```sql
 -- Les restaurants ayant un avis moyen de plus de 3
 SELECT r.name, AVG(c.note) AS average_rating
@@ -110,15 +111,22 @@ GROUP BY r.name
 HAVING AVG(c.note) >= 3;
 ```
 
-*Aglèbre relationnelle*
+*Algèbre relationnelle*
 
 $\pi_{\text{name, average\_rating}} \sigma_{\text{average\_rating} \geq 3}(\text{restaurants})$
+
+*Calcul relationnel tuple*
+
+Soit $R$ la relation `restaurants`.
+
+$\{r.name | R(r) \land r.average_rating >= 3\}$
 
 ---
 
 ### Requête 2
 
 *SQL*
+
 ```sql
 -- Le restaurant avec le plat le plus cher
 WITH most_expensive_dish AS ( -- Récupère le plat le plus cher par restaurant
@@ -143,31 +151,36 @@ FROM
 WHERE 
     med.price = (SELECT MAX(med.price) FROM most_expensive_dish med);
 ```
+
 ---
 
 *Algèbre relationnelle*
 
-$a \leftarrow \pi_{\text{price}}(plats)$
+$a \leftarrow \pi_{\text{idR, menuR, nameR}}(\alpha_{\text{id:idR, menu:menuR, name:nameR}}(restaurants))$
 
-$b \leftarrow plats \times \alpha_{\text{price:price2}}(a)$
+$b \leftarrow \pi_{\text{menuP, priceP}}(\alpha_{\text{menu:menuP, price:priceP}}(plats))$
 
-$c \leftarrow \sigma_{\text{price<price2}}(b)$
+$c \leftarrow a \bowtie_{\text{menuP=menuR}} b$
 
-$d \leftarrow \pi_{\text{id}}(c)$
+$d \leftarrow \pi_{\text{menuP, priceP}}(C)$
 
-$e \leftarrow \pi_{\text{id}}(plats)$
+$e \leftarrow c \times \alpha_{\text{PriceP:PriceP2}}(d)$
 
-$f \leftarrow e - d$
-
-$g \leftarrow f * \alpha_{\text{menu:menuP}}(plats)$
+$f \leftarrow \sigma_{\text{PriceP < PriceP2}}(e)$
 
 $h \leftarrow \pi_{\text{name}}(restaurants \bowtie_{\text{menu=menuP}} g)$
 
+---
 
+*Calcul relationnel tuple*
+
+$r.name, p.name, p.price | r \in \text{restaurants} \land p \in \text{plats}$
+$\land p.menu_id = r.menu_id \land \nexists p_1(p_1 \in \text{restaurants} \land p.price < p_1.price)$
 
 ---
 
 ### Requête 3
+
 ```sql
 -- Les 10 clients ayant consommé le plus de mexicains
 WITH mexican_consumption AS ( -- Récupère le nombre de fois que chaque client à mangé mexicain
@@ -205,6 +218,7 @@ Il s'agit d'une requête qui requiert des notions d'ordre et de limite de résul
 ---
 
 ### Requête 4
+
 ```sql
 -- Le restaurant non-asiatique proposant le plus de plats qui sont généralement proposés dans des restaurant asiatiques
 -- Étape 1: Identifier les plats servis dans les restaurants asiatiques
@@ -257,6 +271,7 @@ Il n'est à nouveau pas possible de trouver quel restaurant non-asiatique propos
 ---
 
 ### Requête 5
+
 ```sql
 -- Le code postal de la ville dans laquelle les restaurants sont les moins bien notés en moyenne
 WITH average_per_restaurant AS ( -- Calcule la note moyenne de chaque restaurant
@@ -302,6 +317,7 @@ Impossible de calculer des moyennes en algèbre relationnelle.
 ---
 
 ### Requête 6
+
 ```sql
 -- Pour chaque tranche de score moyen (1/5, 2/5, 3/5, ...) de restaurant, le type de nourriture le plus représenté
 WITH avg_scores AS ( -- Calcule al moyenne des notes de chaque restaurant
@@ -377,5 +393,3 @@ WHERE
 *Algèbre relationnelle*
 
 Notion d'ordre (le plus représenté). Limité par l'agèbre relationnelle.
-
-

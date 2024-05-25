@@ -75,7 +75,8 @@ class Database:
         """
         res = ()
         with open(file, "r") as f:
-            res = self.cursor.execute(f.read())
+            self.cursor.execute(f.read())
+        res = self.cursor.fetchall()
         return res
 
     def select(self, table: str, columns: list, condition: str = None, args=None):
