@@ -326,6 +326,22 @@ class Database:
     def get_dishes(self, menu_id) -> tuple:
         return self.execute("SELECT * FROM plats WHERE MENU = %s", (menu_id,))
 
+    def get_dishes_id_from_review(self, review_id: int) -> list:
+        """
+        Get the dishes ordered in a review
+        """
+        self.cursor.execute(
+            "SELECT ID_PLAT FROM notes_plat WHERE ID_NOTE = %s", (review_id,)
+        )
+        return self.cursor.fetchall()
+
+    def get_dish_name(self, dish_id: int) -> str:
+        """
+        Get the name of a dish by its ID
+        """
+        self.cursor.execute("SELECT NAME FROM plats WHERE ID = %s", (dish_id,))
+        return self.cursor.fetchone()[0]
+
     def get_all_allergens(self) -> list:
         """
         Get all allergens from the database
