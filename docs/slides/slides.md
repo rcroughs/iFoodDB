@@ -21,8 +21,8 @@ Par Romain Croughs, Chris Eid, Gabriel Goldsztajn, et Lucas Van Praag.
 
 ### Technologies utilisées
 
-- <bxl-python/> Python
-- <bxl-postgresql/> PostgreSQL
+- <bxl-python/> (Python)[https://www.python.org/]
+- <bxl-postgresql/> (PostgreSQL)[https://www.postgresql.org/]
 
 ---
 
