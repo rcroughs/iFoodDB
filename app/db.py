@@ -230,6 +230,10 @@ class Database:
         )
         return self.cursor.fetchone()
 
+    def get_user(self, user_id: int) -> tuple:
+        self.cursor.execute("SELECT * FROM users WHERE ID = %s", (user_id,))
+        return self.cursor.fetchone()
+
     def is_owner(self, client_id: int) -> bool:
         """
         Returns if a user is a restaurant owner
@@ -319,7 +323,7 @@ class Database:
                 "SELECT ID FROM plats WHERE NAME = %s AND MENU = %s", (name, menu_id)
             )
 
-    def get_dishes(self, menu_id):
+    def get_dishes(self, menu_id) -> tuple:
         return self.execute("SELECT * FROM plats WHERE MENU = %s", (menu_id,))
 
     def get_all_allergens(self) -> list:
@@ -533,7 +537,7 @@ class Database:
         Get reviews of a given restaurant
         """
         self.cursor.execute(
-            "SELECT * FROM reviews WHERE ID_RESTAURANT = %s", (restaurant_id,)
+            "SELECT * FROM notes WHERE ID_RESTAURANT = %s", (restaurant_id,)
         )
         return self.cursor.fetchall()
 
