@@ -2,6 +2,7 @@ from app.Model.Address import Address
 from app.db import Database
 from app.Model.Recommendation import Recommendation
 from app.Model.Restaurant import Restaurant
+from app.os import clear
 from datetime import date
 
 
@@ -46,6 +47,8 @@ class User:
         return client_id
 
     def leave_review(self):
+        print("📝 Leave a review")
+        print("-----------------------------------------------")
         # ID du client
         id_client = self.client_id
 
@@ -320,6 +323,7 @@ class User:
             print("╪ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ┅ ╪")
 
             reviews_counter += 1
+        input("Press enter to continue")
 
     def display_restaurant(self, restaurant: Restaurant):
         print(f"🍽️ Name: {restaurant.name()}")
@@ -354,6 +358,8 @@ class User:
         print("🥥 Type: ", restaurant.type())
 
     def search_restaurant(self):
+        print("🔍 Search a restaurant")
+        print("-----------------------------------------------")
         restaurant_input = input("Nom du restaurant: ")
         restaurants = self.db.search_restaurant(restaurant_input.strip())
         if len(restaurants) == 0:
@@ -373,11 +379,16 @@ class User:
                 else:
                     print("Invalid choice")
 
+        input("Press enter to continue")
+
     def delete_review(self):
+        print("🗡️ Delete a review")
+        print("-----------------------------------------------")
         print("Which type of deletion would you like to do?")
         print("1. Delete a review by ID")
         print("2. Delete a review by restaurant")
         print("3. Delete a review by user")
+        print("-----------------------------------------------")
         valid = False
         input_type = 0
         while not valid:
@@ -497,6 +508,8 @@ class User:
                 else:
                     print("Invalid choice")
 
+        input("The review has been deleted. Press enter to continue")
+
     def run(self):
         print("Would you like to login or register?")
         valid = False
@@ -516,6 +529,9 @@ class User:
         is_mod = self.db.is_mod(self.client_id)
         leaved = False
         while not leaved:
+            clear()
+            print("📖 Main menu")
+            print("-----------------------------------------------")
             print("What would you like to do? ")
             print("1. Search a restaurant")
             print("2. Review a restaurant")
@@ -524,6 +540,7 @@ class User:
             if is_mod:
                 print("5. Delete a review")
             option = input("Option: ")
+            clear()
             if option == "1":
                 self.search_restaurant()
             elif option == "2":
