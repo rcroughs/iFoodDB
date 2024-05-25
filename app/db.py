@@ -2,6 +2,7 @@ import psycopg2
 from app.Model.PriceRange import PriceRange
 from app.Model.Restaurant import Restaurant
 from app.Model.Address import Address
+from app.Model.User import User
 from app.Model.Recommendation import Recommendation
 from config import Config
 
@@ -301,7 +302,7 @@ class Database:
         Check if a given user is a moderator
         """
         self.cursor.execute(
-            "SELECT * FROM moderators WHERE ID_CLIENT = %s", (client_id,)
+            "SELECT * FROM moderateurs WHERE ID_CLIENT = %s", (client_id,)
         )
         return self.cursor.fetchone() is not None
 
@@ -309,7 +310,7 @@ class Database:
         """
         Gives moderator rights to a user
         """
-        self.execute("INSERT INTO moderators (ID_CLIENT) VALUES (%s)", (client_id,))
+        self.execute("INSERT INTO moderateurs (ID_CLIENT) VALUES (%s)", (client_id,))
         return self
 
     def get_dish_id(self, name: str, menu_id: int = None) -> int:
@@ -383,15 +384,15 @@ class Database:
         """
         Add a review to a restaurant
 
-        :param restaurant_id: The ID of the restaurant 
-        :param client_id: The ID of the client 
+        :param restaurant_id: The ID of the restaurant
+        :param client_id: The ID of the client
         :param rating: The rating of the restaurant
-        :param comment: The comment of the client 
-        :param recommendation: The recommendation of the client (RECOMMENDED, NOT_RECOMMENDED, TO_BE_AVOIDED) 
-        :param plat: The ordered dishes 
-        :param price: The price of the meal  
-        :param begin: The beginning of the meal 
-        :param end: The end of the meal 
+        :param comment: The comment of the client
+        :param recommendation: The recommendation of the client (RECOMMENDED, NOT_RECOMMENDED, TO_BE_AVOIDED)
+        :param plat: The ordered dishes
+        :param price: The price of the meal
+        :param begin: The beginning of the meal
+        :param end: The end of the meal
         :param date_rating: The date of the rating
         :param physical_note: The physical note of the restaurant
         :param delivery_note: The delivery note of the restaurant
@@ -455,7 +456,7 @@ class Database:
         Get the mod id of a given user
         """
         self.cursor.execute(
-            "SELECT ID FROM moderators WHERE ID_CLIENT = %s", (client_id,)
+            "SELECT ID FROM moderateurs WHERE ID_CLIENT = %s", (client_id,)
         )
         return self.cursor.fetchone()
 
@@ -466,13 +467,19 @@ class Database:
         if self.is_mod(client_id):
             mod_id = self.get_mod_id(client_id)
             informations = self.execute(
-                "SELECT * FROM reviews WHERE ID = %s", (review_id,)
-            )
+                "SELECT * FROM notes WHERE ID = %s", (review_id,)
+            )[0]
+            print(mod_id)
             self.cursor.execute(
-                "INSERT INTO notes_supprimées (ID, ID_RESTAURANT, ID_CLIENT, RATING, COMMENT, RECOMMENDATION, ORDERED_DISH, PRICE, NOTE_PHYSICAL, NOTE_DELIVERY, ID_MEDERATEUR, MOD_COMMENT) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
-                (informations, mod_id, mod_comment),
+                "INSERT INTO notes_supprimees (ID, ID_CLIENT, ID_RESTAURANT, DATE_RATING, COMMENT, NOTE, RECOMMENDATION, NOTE_PHYSICAL, NOTE_DELIVERY, BEGIN_HOUR, END_HOUR, PRICE, ID_MODERATEUR, MOD_COMMENT) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                (informations + (mod_id[0], mod_comment)),
             )
-            self.execute("DELETE FROM reviews WHERE ID = %s", (review_id,))
+            self.execute("DELETE FROM notes WHERE ID = %s", (review_id,))
+            # Update the average rating of the restaurant
+            self.execute(
+                "UPDATE restaurants SET AVERAGE_RATING = (SELECT AVG(NOTE) FROM notes WHERE ID_RESTAURANT = %s) WHERE ID = %s",
+                (informations[2], informations[2]),
+            )
         return self
 
     def delete_review_anonymously(self, review_id: int, mod_comment: str):
@@ -561,10 +568,7 @@ class Database:
         """
         Get reviews posted by a given user
         """
-        self.cursor.execute(
-            "SELECT * FROM notes WHERE ID_CLIENT = %s",
-            (client_id,)
-        )
+        self.cursor.execute("SELECT * FROM notes WHERE ID_CLIENT = %s", (client_id,))
         return self.cursor.fetchall()
 
     def get_owner_restaurants(self, client_id: int) -> list:
@@ -602,7 +606,7 @@ class Database:
 
     ### Functions for the parser (can be used outside of it, but are mostly used in the parser) ###
 
-    def add_user(self, user):
+    def add_user(self, user: User):
         if user.is_owner():
             if not self.check_user(user.name(), user.first_name()):
                 self.create_owner(user.name(), user.first_name(), user.address())

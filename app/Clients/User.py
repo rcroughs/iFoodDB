@@ -288,13 +288,12 @@ class User:
             physical_note,
             delivery_note,
         )
-    
+
         self.db.commit()
-      
-    
+
     def get_all_reviews(self):
         reviews = self.db.get_user_reviews(self.client_id)
-        
+
         reviews_counter = 1
 
         for review in reviews:
@@ -306,7 +305,13 @@ class User:
             print(f"| Rating date : {review[3]}")
             print(f"| Comment : {review[4]}")
             print(f"| Global rating : {review[5]}")
-            appreciation = "Recommanded" if review[6] == 3 else "Not recommanded" if review[6] == 2 else "To avoid"
+            appreciation = (
+                "Recommanded"
+                if review[6] == 3
+                else "Not recommanded"
+                if review[6] == 2
+                else "To avoid"
+            )
             print(f"| Appreciation : {appreciation}")
             print(f"| Delivery note (0 if none) : {review[7]}")
             print(f"| Physical note (0 if none) : {review[8]}")
@@ -368,6 +373,130 @@ class User:
                 else:
                     print("Invalid choice")
 
+    def delete_review(self):
+        print("Which type of deletion would you like to do?")
+        print("1. Delete a review by ID")
+        print("2. Delete a review by restaurant")
+        print("3. Delete a review by user")
+        valid = False
+        input_type = 0
+        while not valid:
+            input_type = input("Option: ")
+            if input_type.isdigit():
+                input_type = int(input_type)
+                if 1 <= input_type <= 3:
+                    valid = True
+                else:
+                    print("Invalid option")
+
+        if input_type == 1:
+            review_id = 0
+            valid = False
+            while not valid:
+                review_id = input("Review ID: ")
+                if review_id.isdigit():
+                    review_id = int(review_id)
+                else:
+                    print("Invalid review ID")
+            review_comment = input("Deletion reason: ")
+            self.db.delete_review(review_id, self.client_id, review_comment)
+        elif input_type == 2:
+            restaurant_id = 0
+            valid = False
+            while not valid:
+                restaurant_input = input("Nom du restaurant : ")
+                restaurant_data = self.db.search_restaurant(restaurant_input.strip())
+                if len(restaurant_data) == 1:
+                    restaurant_id = restaurant_data[0].id()
+                    valid = True
+                else:
+                    print("Invalid restaurant")
+            reviews = self.db.get_restaurant_reviews(restaurant_id)
+            if len(reviews) == 0:
+                print("No reviews found")
+                return
+            for index, review in enumerate(reviews):
+                review_user = self.db.get_user(review[1])
+                review_date = review[3]
+                review_comment = review[4]
+                review_note = review[5]
+                review_appreciation = review[6]
+                print(
+                    f"{index + 1}. Review by {review_user[1]} {review_user[2]} on {review_date}"
+                )
+                print(review_comment)
+                print(f"Note: {review_note}")
+                if review_appreciation == Recommendation.RECOMMENDED.int():
+                    print("Recommended")
+                elif review_appreciation == Recommendation.NOT_RECOMMENDED.int():
+                    print("Not recommended")
+                else:
+                    print("To be avoided")
+                print()
+            valid = False
+            while not valid:
+                choice = input(f"Veuillez choisir un review (1 - {len(reviews)}): ")
+                if choice.isdigit():
+                    choice = int(choice)
+                    if 1 <= choice <= len(reviews):
+                        valid = True
+                        comment = input("Deletion reason: ")
+                        self.db.delete_review(
+                            reviews[choice - 1][0], self.client_id, comment
+                        )
+                    else:
+                        print("Invalid choice")
+                else:
+                    print("Invalid choice")
+        elif input_type == 3:
+            user_id = 0
+            valid = False
+            while not valid:
+                f_name = input("First name: ")
+                l_name = input("Last name: ")
+                if self.db.check_user(l_name, f_name):
+                    user_id = self.db.get_user_id(l_name, f_name)[0]
+                    valid = True
+                else:
+                    print("User not found")
+            reviews = self.db.get_user_reviews(user_id)
+            if len(reviews) == 0:
+                print("No reviews found")
+                return
+            for index, review in enumerate(reviews):
+                review_user = self.db.get_user(review[1])
+                review_date = review[3]
+                review_comment = review[4]
+                review_note = review[5]
+                review_appreciation = review[6]
+                print(
+                    f"{index + 1}. Review by {review_user[1]} {review_user[2]} on {review_date}"
+                )
+                print(review_comment)
+                print(f"Note: {review_note}")
+                if review_appreciation == Recommendation.RECOMMENDED.int():
+                    print("Recommended")
+                elif review_appreciation == Recommendation.NOT_RECOMMENDED.int():
+                    print("Not recommended")
+                else:
+                    print("To be avoided")
+                print()
+            valid = False
+            while not valid:
+                choice = input(f"Veuillez choisir un review (1 - {len(reviews)}): ")
+                if choice.isdigit():
+                    choice = int(choice)
+                    if 1 <= choice <= len(reviews):
+                        valid = True
+                        comment = input("Deletion reason: ")
+                        self.db.delete_review(
+                            reviews[choice - 1][0], self.client_id, comment
+                        )
+                    else:
+                        print("Invalid choice")
+                else:
+                    print("Invalid choice")
+
     def run(self):
         print("Would you like to login or register?")
         valid = False
@@ -384,6 +513,7 @@ class User:
                 print("Invalid option")
                 valid = False
 
+        is_mod = self.db.is_mod(self.client_id)
         leaved = False
         while not leaved:
             print("What would you like to do? ")
@@ -391,6 +521,8 @@ class User:
             print("2. Review a restaurant")
             print("3. See your reviews")
             print("4. Leave")
+            if is_mod:
+                print("5. Delete a review")
             option = input("Option: ")
             if option == "1":
                 self.search_restaurant()
@@ -400,6 +532,8 @@ class User:
                 self.get_all_reviews()
             elif option == "4":
                 leaved = True
+            elif option == "5" and is_mod:
+                self.delete_review()
             else:
                 print("Invalid option")
                 leaved = False
