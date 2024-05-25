@@ -101,6 +101,7 @@ def extract_comment(self, comment) -> Comment:
 ### Requête 1
 
 *SQL*
+
 ```sql
 -- Les restaurants ayant un avis moyen de plus de 3
 SELECT r.name, AVG(c.note) AS average_rating
@@ -110,15 +111,22 @@ GROUP BY r.name
 HAVING AVG(c.note) >= 3;
 ```
 
-*Aglèbre relationnelle*
+*Algèbre relationnelle*
 
 $\pi_{\text{name, average\_rating}} \sigma_{\text{average\_rating} \geq 3}(\text{restaurants})$
+
+*Calcul relationnel tuple*
+
+Soit $R$ la relation `restaurants`.
+
+$\{r.name | R(r) \land r.average_rating >= 3\}$
 
 ---
 
 ### Requête 2
 
 *SQL*
+
 ```sql
 -- Le restaurant avec le plat le plus cher
 WITH most_expensive_dish AS ( -- Récupère le plat le plus cher par restaurant
@@ -143,6 +151,7 @@ FROM
 WHERE 
     med.price = (SELECT MAX(med.price) FROM most_expensive_dish med);
 ```
+
 ---
 
 *Algèbre relationnelle*
@@ -163,10 +172,17 @@ $g \leftarrow \sigma_{\text{menuP=menuR}}(f)$
 
 $h \leftarrow \pi_{\text{name}}(g)$
 
+---
+
+*Calcul relationnel tuple*
+
+$r.name, p.name, p.price | r \in \text{restaurants} \land p \in \text{plats}$
+$\land p.menu_id = r.menu_id \land \nexists p_1(p_1 \in \text{restaurants} \land p.price < p_1.price)$
 
 ---
 
 ### Requête 3
+
 ```sql
 -- Les 10 clients ayant consommé le plus de mexicains
 WITH mexican_consumption AS ( -- Récupère le nombre de fois que chaque client à mangé mexicain
@@ -198,6 +214,7 @@ LIMIT
 ---
 
 ### Requête 4
+
 ```sql
 -- Le restaurant non-asiatique proposant le plus de plats qui sont généralement proposés dans des restaurant asiatiques
 WITH AsianRestaurantDishes AS(
@@ -211,6 +228,7 @@ WITH AsianRestaurantDishes AS(
 ---
 
 ### Requête 5
+
 ```sql
 -- Le code postal de la ville dans laquelle les restaurants sont les moins bien notés en moyenne
 WITH average_per_restaurant AS ( -- Calcule la note moyenne de chaque restaurant
@@ -252,6 +270,7 @@ WHERE
 ---
 
 ### Requête 6
+
 ```sql
 -- Pour chaque tranche de score moyen (1/5, 2/5, 3/5, ...) de restaurant, le type de nourriture le plus représenté
 WITH avg_scores AS ( -- Calcule al moyenne des notes de chaque restaurant
@@ -323,5 +342,3 @@ WHERE
     rank = 1;
 
 ```
-
-
