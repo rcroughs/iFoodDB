@@ -21,8 +21,15 @@ Par Romain Croughs, Chris Eid, Gabriel Goldsztajn, et Lucas Van Praag.
 
 ### Technologies utilisées
 
-- <bxl-python/> (Python)[https://www.python.org/]
-- <bxl-postgresql/> (PostgreSQL)[https://www.postgresql.org/]
+- <bxl-python/> [Python](https://www.python.org/)
+- <bxl-postgresql/> [PostgreSQL](https://www.postgresql.org/)
+
+### Scripts Python du projet
+
+- `DDL.py`: Création des tables de base de données (n'est pas obligatoire vu que les tables sont égalements crées dans les autres scripts)
+- `init.py`: Insertion des données dans la base de données
+- `ifood.py`: CLI pour interagir avec la base de données
+- `test.py` Test des requetes SQL
 
 ---
 
