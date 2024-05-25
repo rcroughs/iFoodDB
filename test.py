@@ -31,6 +31,37 @@ def setup_test_data(db):
 
     db.connection.commit()
 
+
+def test_request2(db):
+    # Execute the request2.sql query
+    with open("sql/request_2.sql", "r") as file:
+        query = file.read()
+
+  
+    print("\nExecuting request 2")
+    db.cursor.execute(query)
+    results = db.cursor.fetchall()
+
+    # Print results for verification
+    for row in results:
+        print(row)
+
+
+def test_request5(db):
+    # Execute the request5.sql query
+    with open("sql/request_5.sql", "r") as file:
+        query = file.read()
+
+  
+    print("\nExecuting request 5")
+    db.cursor.execute(query)
+    results = db.cursor.fetchall()
+
+    # Print results for verification
+    for row in results:
+        print(row)
+
+
 def test_request6(db):
     # Execute the request6.sql query
     with open("sql/request_6.sql", "r") as file:
@@ -43,6 +74,7 @@ def test_request6(db):
     # Print results for manual verification
     for row in results:
         print(row)
+
 
 def test_request3(db):
     # Execute the request3.sql query
@@ -64,7 +96,9 @@ def main():
     db.connect()
     db.create_tables("sql/create_tables.sql")
     
+    test_request2(db)
     test_request3(db)
+    test_request5(db)
     test_request6(db)
     
 
