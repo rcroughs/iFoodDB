@@ -242,6 +242,14 @@ LIMIT
 
 Il s'agit d'une requête qui requiert des notions d'ordre et de limite de résultats. Ce n'est pas applicable en algèbre relationnelle traditionnelle car les opérations d'aggrégation n'y sont pas admises.
 
+*Calcul relationnel tuple*
+
+Premièrement, pour trouver le nombre de fois que chaque client a mangé mexicain:
+
+$\{n.id\_client, \text{COUNT(*)} | n \in \text{notes} \land r \in \text{restaurants} \land n.id\_restaurant = r.id \land r.food\_type = 'mexicain'\}$
+
+Cependant, il est impossible de déterminer les 10 clients ayant consommé le plus de mexicain en calcul relationnel tuple, car cette opération nécessite des notions d'ordre et de limite.
+
 ---
 
 ### Requête 4
@@ -297,6 +305,26 @@ Il n'est à nouveau pas possible de trouver quel restaurant non-asiatique propos
 
 ---
 
+**Calcul relationnel tuple**
+
+Identifier les plats servis dans les restaurants asiatiques:
+
+$\{p.id, p.name | r \in \text{restaurants} \land p \in \text{plats} \land r.menu = p.menu \land r.food\_type = 'asiatique'\}$
+
+Identifier les plats servis dans les restaurants non-asiatiques (qui est la requête inverse)
+
+$\{r.id, p.name | r \in \text{restaurants} \land p \in \text{plats} \land r.menu = p.menu \land r.food\_type \neq 'asiatique'\}$
+
+Compter le nombre de plats typiquement (dans plus de deux restaurants) servis dans les restaurants asiatiques qui sont servis dans chaque restaurant non-asiatique:
+
+$\{r.id, \text{COUNT(*)} | r \in \text{restaurants} \land p \in \text{plats} \land r.menu = p.menu \land r.food\_type \neq 'asiatique'\}$
+
+Finalement, pour afficher le restaurant non-asiatique avec le plus grand nombre de ces plats:
+
+$\{r.name, r.food\_type, pdr.popular\_dish\_count | r \in \text{restaurants} \land pdr \in \text{PopularDishesInNonAsianRestaurants} \land pdr.restaurant\_id = r.id \land \nexists pdr_1(pdr_1 \in \text{PopularDishesInNonAsianRestaurants} \land pdr.popular\_dish\_count <= pdr_1.popular\_dish\_count)\}$
+
+---
+
 ### Requête 5
 
 ```sql
@@ -340,6 +368,17 @@ WHERE
 *Algèbre relationnelle*
 
 Impossible de calculer des moyennes en algèbre relationnelle.
+
+*Calcul relationnel tuple*
+Dans le code SQL, nous calculons la moyenne, mais elle est en réalité présente dans `note.average_rating` donc nous n'avons pas besoin de la calculer nous même.
+
+Par contre, en ce concernant la ville la moins bien notée, nous avons:
+
+$\{r.zip\_code, \text{AVG(n.note)} | r \in \text{restaurants} \land n \in \text{notes} \land r.id = n.id\_restaurant\}$
+
+En sachant que nous optenons la moyenne en faisans $\sum_{i=1}^{n} \text{note}_i / n$. Ensuite, nous avons:
+
+$\{CodePostal, \text{AVG(MoyenneNote)} | \text{average\_per\_restaurant} \land \nexists \text{CodePostal}_1(\text{average\_per\_restaurant}_1 \land \text{MoyenneParVille} \leq \text{MoyenneParVille}_1)\}$
 
 ---
 
@@ -420,3 +459,7 @@ WHERE
 *Algèbre relationnelle*
 
 Notion d'ordre (le plus représenté). Limité par l'agèbre relationnelle.
+
+*Calcul relationnel tuple*
+
+Il n'est pas possible avec les connaissances acquises au travaux pratiques de classer par tranches de notes.
