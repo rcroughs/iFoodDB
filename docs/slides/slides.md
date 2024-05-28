@@ -96,6 +96,33 @@ def extract_comment(self, comment) -> Comment:
 
 ---
 
+## Contraintes d'intégrité de la base de données
+
+Afin de garantir l'intégrité des données, nous avons défini certaines des contraintes suivantes:
+
+- **Heures d'ouverture**: Les heures d'ouverture d'un restaurant doivent être comprises entre 0 et 24.
+- **Heures de livraison**: Les heures de livraison d'un restaurant doivent être comprises entre 0 et 24, et doivent être supérieures aux heures d'ouverture.
+- **Note**: La note d'un commentaire doit être comprise entre 0 et 5.
+- **Tranche de prix**: Est un chiffre entre 1 et 3 qui représente la tranche de prix d'un restaurant (dans l'énumération PriceRange)
+- **Notes de service et de livraison**: Un des deux doit être renseigné, mais pas les deux.
+
+---
+
+## Classe `Database`
+
+La classe `Database` contient une collection de méthodes qui permettent lac connexion à la base de données et l'éxecution de certaines requêtes SQL. Cela permet une utilisation plus haut niveau de la database. Voici quelques exemples de méthodes:
+
+- `connect()`: Permet de se connecter à la base de données.
+- `create_user(name: str, first_name: str, address: Address)`: Permet la creation d'un utilisateur (client).
+- `check_owner(name, first_name)`: Permet de vérifier si un propriétaire existe déjà.
+- `get_all_allergens()`: Permet de récupérer tous les allergènes.
+
+Cependant certaines méthodes dépréciées car elles sont utilisées dans le cadre de l'extraction de données. Par exemple:
+
+- **Ajouter un commentaire supprimé**: Dans notre architecture, il est largement recommendé à un modérateur de "signer" sa supppression de commentaire. Cela permet de garder une trace des actions effectuées. Cependant, dans la classe `delete_comment()`, nous ne preonons pas en compte l'id du modédérateur, car elle ne sont pas présentes dans les données.
+
+---
+
 ## Requêtes SQL demandées
 
 ### Requête 1
