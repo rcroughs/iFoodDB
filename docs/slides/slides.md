@@ -183,17 +183,19 @@ WHERE
 
 *Algèbre relationnelle*
 
-$a \leftarrow \pi_{\text{idR, menuR, nameR}}(\alpha_{\text{id:idR, menu:menuR, name:nameR}}(restaurants))$
+$a \leftarrow \pi_{\text{price}}(plats)$
 
-$b \leftarrow \pi_{\text{menuP, priceP}}(\alpha_{\text{menu:menuP, price:priceP}}(plats))$
+$b \leftarrow plats \times \alpha_{\text{price:price2}}(a)$
 
-$c \leftarrow a \bowtie_{\text{menuP=menuR}} b$
+$c \leftarrow \sigma_{\text{price<price2}}(b)$
 
-$d \leftarrow \pi_{\text{menuP, priceP}}(C)$
+$d \leftarrow \pi_{\text{id}}(c)$
 
-$e \leftarrow c \times \alpha_{\text{PriceP:PriceP2}}(d)$
+$e \leftarrow \pi_{\text{id}}(plats)$
 
-$f \leftarrow \sigma_{\text{PriceP < PriceP2}}(e)$
+$f \leftarrow e - d$
+
+$g \leftarrow f * \alpha_{\text{menu:menuP}}(plats)$
 
 $h \leftarrow \pi_{\text{name}}(restaurants \bowtie_{\text{menu=menuP}} g)$
 
